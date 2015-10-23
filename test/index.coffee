@@ -4,6 +4,19 @@ atob = require 'atob'
 express = require 'express'
 passport = require 'passport'
 supertest = require 'supertest'
+mockery = require 'mockery'
+requestMock = require 'requestmock'
+
+mockery.enable(warnOnUnregistered: false)
+mockery.registerMock('request', requestMock)
+
+apiHost = 'api.resindev.io'
+apiPort = 80
+requestMock.register 'post', "https://#{apiHost}:#{apiPort}/auth", (opts, cb) ->
+	if opts.body.id == 1 and opts.body.jwt_secret == 's3cr3t'
+		cb(null, statusCode: 200, 'OK')
+	else
+		cb(null, statusCode: 401, 'Forbidden')
 
 jwt = require '../index'
 
@@ -29,7 +42,7 @@ describe 'createJwt', ->
 describe 'middleware', ->
 	before ->
 		@app = express()
-		passport.use(jwt.strategy('testsecret'))
+		passport.use(jwt.strategy('test-jwt', apiHost, apiPort, 'testsecret'))
 		@app.use(passport.initialize())
 		@app.use(jwt.middleware)
 		@app.get('/test', (req, res) ->
@@ -52,7 +65,7 @@ describe 'middleware', ->
 		.expect(401)
 		.end(done)
 
-	it 'should return 401 if service is not defined', (done) ->
+	it 'should return 401 if neither service not user id is defined', (done) ->
 		supertest(@app)
 		.get('/test')
 		.set('Authorization', 'Bearer ' + jwt.createJwt({ data: 'test' }, 'testsecret'))
@@ -80,4 +93,19 @@ describe 'middleware', ->
 		.expect(200)
 		.expect (res) ->
 			expect(res.body).to.have.property('service').that.eql('builder')
+		.end(done)
+	it 'should return 200 passing a correct user jwt', (done) ->
+		supertest(@app)
+		.get('/test')
+		.set('Authorization', 'Bearer ' + jwt.createJwt({ id: 1, jwt_secret: 's3cr3t' }, 'testsecret'))
+		.expect(200)
+		.expect (res) ->
+			expect(res.body).to.have.property('id').that.eql(1)
+			expect(res.body).to.have.property('jwt_secret').that.eql('s3cr3t')
+		.end(done)
+	it 'should return 401 passing an invalid user jwt', (done) ->
+		supertest(@app)
+		.get('/test')
+		.set('Authorization', 'Bearer ' + jwt.createJwt({ id: 1, jwt_secret: 'not-s3cr3t' }, 'testsecret'))
+		.expect(401)
 		.end(done)
