@@ -6,16 +6,21 @@ passport = require 'passport'
 supertest = require 'supertest'
 mockery = require 'mockery'
 requestMock = require 'requestmock'
+jsonwebtoken = require 'jsonwebtoken'
 
 mockery.enable(warnOnUnregistered: false)
 mockery.registerMock('request', requestMock)
 
 apiHost = 'api.resindev.io'
 apiPort = 80
-requestMock.register 'post', "https://#{apiHost}:#{apiPort}/auth", (opts, cb) ->
-	if opts.body.id == 1 and opts.body.jwt_secret == 's3cr3t'
-		cb(null, statusCode: 200, 'OK')
-	else
+requestMock.register 'get', "https://#{apiHost}:#{apiPort}/whoami", (opts, cb) ->
+	try
+		jwtData = jsonwebtoken.verify(opts.headers.Authorization[7..], 'testsecret')
+		if jwtData.id == 1 and jwtData.jwt_secret == 's3cr3t'
+			cb(null, statusCode: 200, 'OK')
+		else
+			throw new Error('invalid user')
+	catch e
 		cb(null, statusCode: 401, 'Forbidden')
 
 jwt = require '../index'
@@ -42,7 +47,7 @@ describe 'createJwt', ->
 describe 'middleware', ->
 	before ->
 		@app = express()
-		passport.use(jwt.strategy('test-jwt', apiHost, apiPort, 'testsecret'))
+		passport.use(jwt.strategy({ apiHost, apiPort, secret: 'testsecret' }))
 		@app.use(passport.initialize())
 		@app.use(jwt.middleware)
 		@app.get('/test', (req, res) ->

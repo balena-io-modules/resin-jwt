@@ -12,12 +12,14 @@ exports.InvalidJwtSecretError = InvalidJwtSecretError
 SECRET = process.env.JSON_WEB_TOKEN_SECRET
 EXPIRY_MINUTES = process.env.JSON_WEB_TOKEN_EXPIRY_MINUTES
 
-exports.strategy = (serviceName, apiHost, apiPort, secret = SECRET) ->
+exports.strategy = (opts = {}) ->
+	opts.secret ?= SECRET
 	new JwtStrategy
-		secretOrKey: secret
+		secretOrKey: opts.secret
 		tokenBodyField: '_token'
 		authScheme: 'Bearer'
-		(jwtData, done) ->
+		passReqToCallback: true
+		(req, jwtData, done) ->
 			Promise.try ->
 				if !jwtData?
 					throw new InvalidJwtSecretError()
@@ -26,19 +28,15 @@ exports.strategy = (serviceName, apiHost, apiPort, secret = SECRET) ->
 						return true
 					else
 						throw new InvalidJwtSecretError()
-				else if jwtData.id and jwtData.jwt_secret
-					authJwt = createJwt(service: serviceName)
-					headers =
-						Authorization: "Bearer #{authJwt}"
-					body =
-						id: jwtData.id
-						jwt_secret: jwtData.jwt_secret
-					request.postAsync({ url: "https://#{apiHost}:#{apiPort}/auth", headers, body, json: 'true' })
+				else
+					requestOpts =
+						url: "https://#{opts.apiHost}:#{opts.apiPort}/whoami"
+						headers:
+							Authorization: req.headers.authorization
+					request.getAsync(requestOpts)
 					.spread (response) ->
 						if response.statusCode isnt 200
 							throw new InvalidJwtSecretError()
-				else
-					throw new InvalidJwtSecretError()
 			.return(jwtData)
 			.nodeify(done)
 
