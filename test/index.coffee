@@ -59,10 +59,24 @@ describe 'middleware', ->
 		.expect(401)
 		.end(done)
 
-	it 'should return 200 passing correct jwt', (done) ->
+	it 'should return 401 if no api key is used in a service token', (done) ->
 		supertest(@app)
 		.get('/test')
 		.set('Authorization', 'Bearer ' + jwt.createJwt({ service: 'builder' }, 'testsecret'))
+		.expect(401)
+		.end(done)
+
+	it 'should return 401 if wrong api key is used in a service token', (done) ->
+		supertest(@app)
+		.get('/test')
+		.set('Authorization', 'Bearer ' + jwt.createJwt({ service: 'builder', 'apikey': 'notapikey' }, 'testsecret'))
+		.expect(401)
+		.end(done)
+
+	it 'should return 200 passing correct jwt', (done) ->
+		supertest(@app)
+		.get('/test')
+		.set('Authorization', 'Bearer ' + jwt.createJwt({ service: 'builder', 'apikey': process.env.BUILDER_SERVICE_API_KEY }, 'testsecret'))
 		.expect(200)
 		.expect (res) ->
 			expect(res.body).to.have.property('service').that.eql('builder')
