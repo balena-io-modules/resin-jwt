@@ -3,6 +3,7 @@ jsonwebtoken = require 'jsonwebtoken'
 passport = require 'passport'
 JwtStrategy = require('passport-jwt').Strategy
 TypedError = require 'typed-error'
+request = Promise.promisifyAll(require 'request')
 
 class InvalidJwtSecretError extends TypedError
 
@@ -11,23 +12,31 @@ exports.InvalidJwtSecretError = InvalidJwtSecretError
 SECRET = process.env.JSON_WEB_TOKEN_SECRET
 EXPIRY_MINUTES = process.env.JSON_WEB_TOKEN_EXPIRY_MINUTES
 
-exports.strategy = (secret = SECRET) ->
+exports.strategy = (opts = {}) ->
+	opts.secret ?= SECRET
 	new JwtStrategy
-		secretOrKey: secret
+		secretOrKey: opts.secret
 		tokenBodyField: '_token'
 		authScheme: 'Bearer'
-		(jwtData, done) ->
+		passReqToCallback: true
+		(req, jwtData, done) ->
 			Promise.try ->
 				if !jwtData?
 					throw new InvalidJwtSecretError()
-				# TODO: user jwt
 				if jwtData.service
 					if jwtData.apikey and process.env["#{jwtData.service.toUpperCase()}_SERVICE_API_KEY"] == jwtData.apikey
 						return true
 					else
 						throw new InvalidJwtSecretError()
 				else
-					throw new InvalidJwtSecretError()
+					requestOpts =
+						url: "https://#{opts.apiHost}:#{opts.apiPort}/whoami"
+						headers:
+							Authorization: req.headers.authorization
+					request.getAsync(requestOpts)
+					.spread (response) ->
+						if response.statusCode isnt 200
+							throw new InvalidJwtSecretError()
 			.return(jwtData)
 			.nodeify(done)
 
