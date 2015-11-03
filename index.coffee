@@ -22,7 +22,10 @@ exports.strategy = (secret = SECRET) ->
 					throw new InvalidJwtSecretError()
 				# TODO: user jwt
 				if jwtData.service
-					return true
+					if jwtData.apikey and process.env["#{jwtData.service.toUpperCase()}_SERVICE_API_KEY"] == jwtData.apikey
+						return true
+					else
+						throw new InvalidJwtSecretError()
 				else
 					throw new InvalidJwtSecretError()
 			.return(jwtData)
@@ -30,6 +33,15 @@ exports.strategy = (secret = SECRET) ->
 
 exports.createJwt = (payload, secret = SECRET, expiry = EXPIRY_MINUTES) ->
 	jsonwebtoken.sign(payload, secret, expiresInMinutes: expiry)
+
+exports.createServiceJwt = (payload, service, apikey, secret = SECRET, expiry = EXPIRY_MINUTES) ->
+	if not service
+		throw new Error('Service name not defined')
+	if not apikey
+		throw new Error('Api key not defined')
+	payload.service = service
+	payload.apikey = apikey
+	createJwt(payload, secret, expiry)
 
 exports.middleware = (req, res, next) ->
 	authenticate = passport.authenticate 'jwt', session: false, (err, auth) ->
