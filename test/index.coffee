@@ -11,12 +11,16 @@ jsonwebtoken = require 'jsonwebtoken'
 mockery.enable(warnOnUnregistered: false)
 mockery.registerMock('request', requestMock)
 
+JSON_WEB_TOKEN_SECRET = 'testsecret'
+USER_ID = 1
+USER_JWT_SECRET = 's3cr3t'
+
 apiHost = 'api.resindev.io'
 apiPort = 80
 requestMock.register 'get', "https://#{apiHost}:#{apiPort}/whoami", (opts, cb) ->
 	try
-		jwtData = jsonwebtoken.verify(opts.headers.Authorization[7..], 'testsecret')
-		if jwtData.id == 1 and jwtData.jwt_secret == 's3cr3t'
+		jwtData = jsonwebtoken.verify(opts.headers.Authorization[7..], JSON_WEB_TOKEN_SECRET)
+		if jwtData.id == USER_ID and jwtData.jwt_secret == USER_JWT_SECRET
 			cb(null, statusCode: 200, 'OK')
 		else
 			throw new Error('invalid user')
@@ -47,7 +51,7 @@ describe 'createJwt', ->
 describe 'middleware', ->
 	before ->
 		@app = express()
-		passport.use(jwt.strategy({ apiHost, apiPort, secret: 'testsecret' }))
+		passport.use(jwt.strategy({ apiHost, apiPort, secret: JSON_WEB_TOKEN_SECRET }))
 		@app.use(passport.initialize())
 		@app.use(jwt.middleware)
 		@app.get('/test', (req, res) ->
@@ -73,28 +77,28 @@ describe 'middleware', ->
 	it 'should return 401 if neither service not user id is defined', (done) ->
 		supertest(@app)
 		.get('/test')
-		.set('Authorization', 'Bearer ' + jwt.createJwt({ data: 'test' }, 'testsecret'))
+		.set('Authorization', 'Bearer ' + jwt.createJwt({ data: 'test' }, JSON_WEB_TOKEN_SECRET))
 		.expect(401)
 		.end(done)
 
 	it 'should return 401 if no api key is used in a service token', (done) ->
 		supertest(@app)
 		.get('/test')
-		.set('Authorization', 'Bearer ' + jwt.createJwt({ service: 'builder' }, 'testsecret'))
+		.set('Authorization', 'Bearer ' + jwt.createJwt({ service: 'builder' }, JSON_WEB_TOKEN_SECRET))
 		.expect(401)
 		.end(done)
 
 	it 'should return 401 if wrong api key is used in a service token', (done) ->
 		supertest(@app)
 		.get('/test')
-		.set('Authorization', 'Bearer ' + jwt.createJwt({ service: 'builder', 'apikey': 'notapikey' }, 'testsecret'))
+		.set('Authorization', 'Bearer ' + jwt.createJwt({ service: 'builder', 'apikey': 'notapikey' }, JSON_WEB_TOKEN_SECRET))
 		.expect(401)
 		.end(done)
 
 	it 'should return 200 passing correct jwt', (done) ->
 		supertest(@app)
 		.get('/test')
-		.set('Authorization', 'Bearer ' + jwt.createJwt({ service: 'builder', 'apikey': process.env.BUILDER_SERVICE_API_KEY }, 'testsecret'))
+		.set('Authorization', 'Bearer ' + jwt.createJwt({ service: 'builder', 'apikey': process.env.BUILDER_SERVICE_API_KEY }, JSON_WEB_TOKEN_SECRET))
 		.expect(200)
 		.expect (res) ->
 			expect(res.body).to.have.property('service').that.eql('builder')
@@ -102,15 +106,15 @@ describe 'middleware', ->
 	it 'should return 200 passing a correct user jwt', (done) ->
 		supertest(@app)
 		.get('/test')
-		.set('Authorization', 'Bearer ' + jwt.createJwt({ id: 1, jwt_secret: 's3cr3t' }, 'testsecret'))
+		.set('Authorization', 'Bearer ' + jwt.createJwt({ id: USER_ID, jwt_secret: USER_JWT_SECRET }, JSON_WEB_TOKEN_SECRET))
 		.expect(200)
 		.expect (res) ->
-			expect(res.body).to.have.property('id').that.eql(1)
-			expect(res.body).to.have.property('jwt_secret').that.eql('s3cr3t')
+			expect(res.body).to.have.property('id').that.eql(USER_ID)
+			expect(res.body).to.have.property('jwt_secret').that.eql(USER_JWT_SECRET)
 		.end(done)
 	it 'should return 401 passing an invalid user jwt', (done) ->
 		supertest(@app)
 		.get('/test')
-		.set('Authorization', 'Bearer ' + jwt.createJwt({ id: 1, jwt_secret: 'not-s3cr3t' }, 'testsecret'))
+		.set('Authorization', 'Bearer ' + jwt.createJwt({ id: USER_ID, jwt_secret: "not-#{USER_JWT_SECRET}" }, JSON_WEB_TOKEN_SECRET))
 		.expect(401)
 		.end(done)
