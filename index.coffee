@@ -40,7 +40,7 @@ exports.strategy = (opts = {}) ->
 			.return(jwtData)
 			.nodeify(done)
 
-exports.createJwt = (payload, secret = SECRET, expiry = EXPIRY_MINUTES) ->
+exports.createJwt = createJwt = (payload, secret = SECRET, expiry = EXPIRY_MINUTES) ->
 	jsonwebtoken.sign(payload, secret, expiresInMinutes: expiry)
 
 exports.createServiceJwt = (payload, service, apikey, secret = SECRET, expiry = EXPIRY_MINUTES) ->
@@ -51,6 +51,25 @@ exports.createServiceJwt = (payload, service, apikey, secret = SECRET, expiry = 
 	payload.service = service
 	payload.apikey = apikey
 	createJwt(payload, secret, expiry)
+
+exports.requestUserJwt = Promise.method (opts = {}) ->
+	if opts.userId?
+		qs = userId: opts.userId
+	else if opts.username
+		qs = username: opts.username
+	else
+		throw new Error('Neither userId not username specified when requesting authorization')
+	requestOpts =
+		url: "https://#{opts.apiHost}:#{opts.apiPort}/authorize"
+		qs: qs
+		headers:
+			Authorizaton: "Bearer #{opts.token}"
+	request.postAsync(requestOpts)
+	.get(1)
+	.get('token')
+	.catch (e) ->
+		console.error('authorization request failed', e, e.message, e.stack)
+		throw e
 
 exports.middleware = (req, res, next) ->
 	authenticate = passport.authenticate 'jwt', session: false, (err, auth) ->
