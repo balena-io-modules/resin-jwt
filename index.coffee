@@ -9,11 +9,11 @@ class InvalidJwtSecretError extends TypedError
 
 exports.InvalidJwtSecretError = InvalidJwtSecretError
 
-SECRET = process.env.JSON_WEB_TOKEN_SECRET
-EXPIRY_MINUTES = process.env.JSON_WEB_TOKEN_EXPIRY_MINUTES
+DEFAULT_EXPIRY_MINUTES = 10080
 
 exports.strategy = (opts = {}) ->
-	opts.secret ?= SECRET
+	if not opts.secret
+		throw new Exception('Json web token secret not defined in jwt strategy')
 	new JwtStrategy
 		secretOrKey: opts.secret
 		tokenBodyField: '_token'
@@ -22,12 +22,12 @@ exports.strategy = (opts = {}) ->
 		(req, jwtData, done) ->
 			Promise.try ->
 				if !jwtData?
-					throw new InvalidJwtSecretError()
+					return false
 				if jwtData.service
-					if jwtData.apikey and process.env["#{jwtData.service.toUpperCase()}_SERVICE_API_KEY"] == jwtData.apikey
-						return true
+					if jwtData.apikey and opts.apiKeys[jwtData.service] == jwtData.apikey
+						return jwtData
 					else
-						throw new InvalidJwtSecretError()
+						return false
 				else
 					requestOpts =
 						url: "https://#{opts.apiHost}:#{opts.apiPort}/whoami"
@@ -36,21 +36,24 @@ exports.strategy = (opts = {}) ->
 					request.getAsync(requestOpts)
 					.spread (response) ->
 						if response.statusCode isnt 200
-							throw new InvalidJwtSecretError()
-			.return(jwtData)
+							return false
+						else
+							return jwtData
 			.nodeify(done)
 
-exports.createJwt = createJwt = (payload, secret = SECRET, expiry = EXPIRY_MINUTES) ->
-	jsonwebtoken.sign(payload, secret, expiresInMinutes: expiry)
+exports.createJwt = createJwt = (payload, secret, expiry = DEFAULT_EXPIRY_MINUTES) ->
+	jsonwebtoken.sign(payload, secret, expiresIn: expiry * 60)
 
-exports.createServiceJwt = (payload, service, apikey, secret = SECRET, expiry = EXPIRY_MINUTES) ->
+exports.createServiceJwt = ({ service, apikey, secret, payload, expiry }) ->
 	if not service
 		throw new Error('Service name not defined')
 	if not apikey
 		throw new Error('Api key not defined')
+	expiry ?= DEFAULT_EXPIRY_MINUTES
+	payload ?= {}
 	payload.service = service
 	payload.apikey = apikey
-	createJwt(payload, secret, expiry)
+	createJwt({ payload, secret, expiry })
 
 exports.requestUserJwt = Promise.method (opts = {}) ->
 	if opts.userId?
@@ -62,6 +65,7 @@ exports.requestUserJwt = Promise.method (opts = {}) ->
 	requestOpts =
 		url: "https://#{opts.apiHost}:#{opts.apiPort}/authorize"
 		qs: qs
+		json: true
 		headers:
 			Authorizaton: "Bearer #{opts.token}"
 	request.postAsync(requestOpts)
@@ -70,13 +74,3 @@ exports.requestUserJwt = Promise.method (opts = {}) ->
 	.catch (e) ->
 		console.error('authorization request failed', e, e.message, e.stack)
 		throw e
-
-exports.middleware = (req, res, next) ->
-	authenticate = passport.authenticate 'jwt', session: false, (err, auth) ->
-		return res.sendStatus(401) if err instanceof InvalidJwtSecretError
-		return next(err) if err
-		return next() if !auth
-
-		req.auth = auth
-		next()
-	authenticate(req, res, next)

@@ -14,6 +14,9 @@ jsonwebtoken = require 'jsonwebtoken'
 mockery.enable(warnOnUnregistered: false)
 mockery.registerMock('request', requestMock)
 
+API_KEYS =
+	builder: 'builderApiKey'
+
 JSON_WEB_TOKEN_SECRET = 'testsecret'
 USER_ID = 1
 USER_JWT_SECRET = 's3cr3t'
@@ -44,7 +47,7 @@ describe 'createJwt', ->
 
 describe 'requestUserJwt', ->
 	before ->
-		@serviceToken = jwt.createJwt({ service: 'builder', 'apikey': process.env.BUILDER_SERVICE_API_KEY }, JSON_WEB_TOKEN_SECRET)
+		@serviceToken = jwt.createJwt({ service: 'builder', 'apikey': API_KEYS.builder }, JSON_WEB_TOKEN_SECRET)
 		@userToken = jwt.createJwt({ id: USER_ID, jwt_secret: USER_JWT_SECRET }, JSON_WEB_TOKEN_SECRET)
 		requestMock.register 'post', "https://#{apiHost}:#{apiPort}/authorize", (opts, cb) =>
 			if opts.qs.userId != USER_ID
@@ -57,17 +60,14 @@ describe 'requestUserJwt', ->
 	it 'should return a promise that resolves to the jwt created by api', ->
 		expect(jwt.requestUserJwt({ userId: 1, apiHost, apiPort, token: @token })).to.eventually.equal(@userToken)
 
-describe 'middleware', ->
+describe 'strategy', ->
 	before ->
 		@app = express()
-		passport.use(jwt.strategy({ apiHost, apiPort, secret: JSON_WEB_TOKEN_SECRET }))
+		passport.use(jwt.strategy({ apiHost, apiPort, secret: JSON_WEB_TOKEN_SECRET, apiKeys: API_KEYS }))
 		@app.use(passport.initialize())
-		@app.use(jwt.middleware)
+		@app.use(passport.authenticate('jwt', { session: false, assignProperty: 'auth' }))
 		@app.get('/test', (req, res) ->
-			if not req.auth?
-				res.sendStatus(401)
-			else
-				res.json(req.auth)
+			res.json(req.auth)
 		)
 
 		requestMock.register 'get', "https://#{apiHost}:#{apiPort}/whoami", (opts, cb) ->
@@ -118,7 +118,7 @@ describe 'middleware', ->
 		it 'should return 200 passing correct jwt', (done) ->
 			supertest(@app)
 			.get('/test')
-			.set('Authorization', 'Bearer ' + jwt.createJwt({ service: 'builder', 'apikey': process.env.BUILDER_SERVICE_API_KEY }, JSON_WEB_TOKEN_SECRET))
+			.set('Authorization', 'Bearer ' + jwt.createJwt({ service: 'builder', 'apikey': API_KEYS.builder }, JSON_WEB_TOKEN_SECRET))
 			.expect(200)
 			.expect (res) ->
 				expect(res.body).to.have.property('service').that.eql('builder')
