@@ -67,7 +67,7 @@ exports.requestUserJwt = Promise.method (opts = {}) ->
 		qs: qs
 		json: true
 		headers:
-			Authorizaton: "Bearer #{opts.token}"
+			Authorization: "Bearer #{opts.token}"
 	request.postAsync(requestOpts)
 	.spread (response, body) ->
 		if response.statusCode isnt 200 or not body.token?
