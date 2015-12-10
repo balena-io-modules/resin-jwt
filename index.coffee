@@ -9,7 +9,7 @@ class InvalidJwtSecretError extends TypedError
 
 exports.InvalidJwtSecretError = InvalidJwtSecretError
 
-DEFAULT_EXPIRY_MINUTES = 10080
+DEFAULT_EXPIRY_MINUTES = 1440
 
 exports.strategy = (opts = {}) ->
 	if not opts.secret
