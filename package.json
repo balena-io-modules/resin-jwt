@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "bluebird": "^2.9.34",
+    "coffee-script": "^1.10.0",
     "jsonwebtoken": "^5.0.4",
     "passport": "^0.2.2",
     "passport-jwt": "^1.1.0",
@@ -26,7 +27,6 @@
     "atob": "^1.1.2",
     "chai": "~3.0.0",
     "chai-as-promised": "^5.1.0",
-    "coffee-script": "~1.9.3",
     "coffeelint": "^1.10.1",
     "express": "^4.13.2",
     "mocha": "~2.2.5",
