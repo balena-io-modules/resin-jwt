@@ -44,15 +44,14 @@ exports.strategy = (opts = {}) ->
 exports.createJwt = createJwt = (payload, secret, expiry = DEFAULT_EXPIRY_MINUTES) ->
 	jsonwebtoken.sign(payload, secret, expiresIn: expiry * 60)
 
-exports.createServiceJwt = ({ service, apikey, secret, payload, expiry = DEFAULT_EXPIRY_MINUTES }) ->
+exports.createServiceJwt = ({ service, apikey, secret, payload = {}, expiry = DEFAULT_EXPIRY_MINUTES }) ->
 	if not service
 		throw new Error('Service name not defined')
 	if not apikey
 		throw new Error('Api key not defined')
-	payload ?= {}
 	payload.service = service
 	payload.apikey = apikey
-	createJwt({ payload, secret, expiry })
+	createJwt(payload, secret, expiry)
 
 exports.requestUserJwt = Promise.method (opts = {}) ->
 	if opts.userId?

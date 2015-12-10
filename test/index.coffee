@@ -111,14 +111,14 @@ describe 'strategy', ->
 		it 'should return 401 if wrong api key is used in a service token', (done) ->
 			supertest(@app)
 			.get('/test')
-			.set('Authorization', 'Bearer ' + jwt.createJwt({ service: 'builder', 'apikey': 'notapikey' }, JSON_WEB_TOKEN_SECRET))
+			.set('Authorization', 'Bearer ' + jwt.createServiceJwt({ service: 'builder', 'apikey': 'notapikey', secret: JSON_WEB_TOKEN_SECRET }))
 			.expect(401)
 			.end(done)
 
 		it 'should return 200 passing correct jwt', (done) ->
 			supertest(@app)
 			.get('/test')
-			.set('Authorization', 'Bearer ' + jwt.createJwt({ service: 'builder', 'apikey': API_KEYS.builder }, JSON_WEB_TOKEN_SECRET))
+			.set('Authorization', 'Bearer ' + jwt.createServiceJwt({ service: 'builder', 'apikey': API_KEYS.builder, secret: JSON_WEB_TOKEN_SECRET }))
 			.expect(200)
 			.expect (res) ->
 				expect(res.body).to.have.property('service').that.eql('builder')
