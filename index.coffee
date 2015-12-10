@@ -59,7 +59,7 @@ exports.requestUserJwt = Promise.method (opts = {}) ->
 	else if opts.username
 		qs = username: opts.username
 	else
-		throw new Error('Neither userId not username specified when requesting authorization')
+		throw new Error('Neither userId nor username specified when requesting authorization')
 	requestOpts =
 		url: "https://#{opts.apiHost}:#{opts.apiPort}/authorize"
 		qs: qs
