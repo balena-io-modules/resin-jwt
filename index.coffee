@@ -64,14 +64,13 @@ exports.requestUserJwt = Promise.method (opts = {}) ->
 	requestOpts =
 		url: "https://#{opts.apiHost}:#{opts.apiPort}/authorize"
 		qs: qs
-		json: true
 		headers:
 			Authorization: "Bearer #{opts.token}"
 	request.postAsync(requestOpts)
 	.spread (response, body) ->
-		if response.statusCode isnt 200 or not body.token?
+		if response.statusCode isnt 200 or not body
 			throw new Error("Authorization failed. Status code: #{response.statusCode}, body: #{body}")
-		return body.token
+		return body
 	.catch (e) ->
 		console.error('authorization request failed', e, e.message, e.stack)
 		throw e

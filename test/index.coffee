@@ -52,7 +52,7 @@ describe 'requestUserJwt', ->
 		requestMock.register 'post', "https://#{apiHost}:#{apiPort}/authorize", (opts, cb) =>
 			if opts.qs.userId != USER_ID
 				cb(null, statusCode: 404, 'No such user')
-			cb(null, statusCode: 200, { token: @userToken })
+			cb(null, statusCode: 200, @userToken)
 
 	it 'should complain if no user identifier is passed', ->
 		expect(jwt.requestUserJwt({ apiHost, apiPort, token: @serviceToken })).to.be.rejectedWith(Error)
