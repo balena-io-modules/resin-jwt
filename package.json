@@ -1,7 +1,6 @@
 {
   "name": "@resin/resin-jwt",
-  "private": "true",
-  "version": "0.0.1",
+  "version": "1.0.3",
   "description": "Jwt signing and handling for resin services.",
   "main": "index.js",
   "repository": {
