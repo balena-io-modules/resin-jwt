@@ -9,28 +9,28 @@
   },
   "author": "Aleksis Brezas <abresas@resin.io>",
   "scripts": {
-    "pretest": "./node_modules/.bin/coffeelint ./index.coffee ./test",
-    "test": "./node_modules/.bin/mocha --compilers coffee:coffee-script/register test/index.coffee",
-    "prepublish": "./node_modules/.bin/coffee -c index.coffee"
+    "pretest": "coffeelint ./index.coffee ./test && coffee -c index.coffee",
+    "test": "mocha --compilers coffee:coffee-script/register test/index.coffee",
+    "prepublish": "npm test"
   },
   "dependencies": {
-    "bluebird": "^2.9.34",
+    "bluebird": "^3.0.0",
     "jsonwebtoken": "^5.0.4",
-    "passport": "^0.2.2",
-    "passport-jwt": "^1.1.0",
+    "passport": "^0.3.2",
+    "passport-jwt": "^2.0.0",
     "request": "^2.65.0",
     "typed-error": "^0.1.0"
   },
   "devDependencies": {
-    "atob": "^1.1.2",
-    "chai": "~3.0.0",
+    "atob": "^2.0.0",
+    "chai": "^3.0.0",
     "chai-as-promised": "^5.1.0",
     "coffee-script": "~1.10.0",
     "coffeelint": "^1.10.1",
     "express": "^4.13.2",
-    "mocha": "~2.2.5",
+    "mocha": "^2.2.5",
     "mockery": "^1.4.0",
-    "passport": "^0.2.2",
+    "passport": "^0.3.2",
     "requestmock": "0.0.9",
     "supertest": "^1.0.1"
   }
