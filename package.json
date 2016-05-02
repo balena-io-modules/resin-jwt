@@ -9,7 +9,8 @@
   },
   "author": "Aleksis Brezas <abresas@resin.io>",
   "scripts": {
-    "pretest": "coffeelint ./index.coffee ./test && coffee -c index.coffee",
+    "lint": "resin-lint ./index.coffee ./test",
+    "pretest": "npm run lint && coffee -c index.coffee",
     "test": "mocha --compilers coffee:coffee-script/register test/index.coffee",
     "prepublish": "npm test"
   },
@@ -32,6 +33,7 @@
     "mockery": "^1.4.0",
     "passport": "^0.3.2",
     "requestmock": "0.0.9",
+    "resin-lint": "^1.2.2",
     "supertest": "^1.0.1"
   }
 }
