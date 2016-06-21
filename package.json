@@ -17,17 +17,14 @@
   "dependencies": {
     "bluebird": "^3.0.0",
     "jsonwebtoken": "^5.0.4",
-    "passport": "^0.3.2",
     "passport-jwt": "^2.1.0",
-    "request": "^2.65.0",
-    "typed-error": "^0.1.0"
+    "request": "^2.65.0"
   },
   "devDependencies": {
     "atob": "^2.0.0",
     "chai": "^3.0.0",
     "chai-as-promised": "^5.1.0",
     "coffee-script": "~1.10.0",
-    "coffeelint": "^1.10.1",
     "express": "^4.13.2",
     "mocha": "^2.2.5",
     "mockery": "^1.4.0",
