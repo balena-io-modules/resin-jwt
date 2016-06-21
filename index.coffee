@@ -1,19 +1,13 @@
 Promise = require 'bluebird'
 jsonwebtoken = require 'jsonwebtoken'
-passport = require 'passport'
 { Strategy: JwtStrategy, ExtractJwt } = require 'passport-jwt'
-TypedError = require 'typed-error'
 request = Promise.promisifyAll(require('request'), multiArgs: true)
-
-class InvalidJwtSecretError extends TypedError
-
-exports.InvalidJwtSecretError = InvalidJwtSecretError
 
 DEFAULT_EXPIRY_MINUTES = 1440
 
 exports.strategy = (opts = {}) ->
 	if not opts.secret
-		throw new Exception('Json web token secret not defined in jwt strategy')
+		throw new Error('Json web token secret not defined in jwt strategy')
 	new JwtStrategy
 		secretOrKey: opts.secret
 		passReqToCallback: true

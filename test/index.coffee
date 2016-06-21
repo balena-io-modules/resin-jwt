@@ -77,7 +77,7 @@ describe 'strategy', ->
 					cb(null, statusCode: 200, 'OK')
 				else
 					throw new Error('invalid user')
-			catch e
+			catch
 				cb(null, statusCode: 401, 'Forbidden')
 
 	it 'should return 401 when jwt is missing', (done) ->
