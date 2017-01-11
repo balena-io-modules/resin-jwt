@@ -5,7 +5,7 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git@bitbucket.org:rulemotion/resin-jwt"
+    "url": "git@github.com:resin-io-modules/resin-jwt.git"
   },
   "author": "Aleksis Brezas <abresas@resin.io>",
   "scripts": {
