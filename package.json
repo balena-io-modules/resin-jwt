@@ -32,5 +32,6 @@
     "requestmock": "^1.4.0",
     "resin-lint": "^2.0.1",
     "supertest": "^3.3.0"
-  }
+  },
+  "license": "Apache-2.0"
 }
