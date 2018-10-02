@@ -26,18 +26,14 @@ apiPort = 80
 
 jwt = require '../index'
 
-describe 'InvalidJwtSecretError', ->
-	it 'should be instance of Error', ->
-		expect(jwt.InvalidJwtSecretError).to.be.instanceof.Error
-
 describe 'createJwt', ->
 	it 'should return a valid jwt', ->
 		token = jwt.createJwt({ data: 'test' }, 'secret')
-		expect(token).to.be.a.String
+		expect(token).to.be.a('string')
 		expect(token.split('.')).to.have.length(3)
 
 		token = jwt.createJwt({}, 'secret')
-		expect(token).to.be.a.String
+		expect(token).to.be.a('string')
 		expect(token.split('.')).to.have.length(3)
 
 	it 'should return a jwt containing the given payload', ->
@@ -80,53 +76,47 @@ describe 'strategy', ->
 			catch
 				cb(null, statusCode: 401, 'Forbidden')
 
-	it 'should return 401 when jwt is missing', (done) ->
+	it 'should return 401 when jwt is missing', ->
 		supertest(@app)
 		.get('/test')
 		.expect(401)
-		.end(done)
 
-	it 'should return 401 when jwt is signed with wrong key', (done) ->
+	it 'should return 401 when jwt is signed with wrong key', ->
 		supertest(@app)
 		.get('/test')
 		.set('Authorization', 'Bearer ' + jwt.createJwt({ service: 'builder' }, 'wrongsecret'))
 		.expect(401)
-		.end(done)
 
-	it 'should return 401 if neither service not user id is defined', (done) ->
+	it 'should return 401 if neither service not user id is defined', ->
 		supertest(@app)
 		.get('/test')
 		.set('Authorization', 'Bearer ' + jwt.createJwt({ data: 'test' }, JSON_WEB_TOKEN_SECRET))
 		.expect(401)
-		.end(done)
 
 	describe 'service token', ->
-		it 'should return 401 if no api key is used in a service token', (done) ->
+		it 'should return 401 if no api key is used in a service token', ->
 			supertest(@app)
 			.get('/test')
 			.set('Authorization', 'Bearer ' + jwt.createJwt({ service: 'builder' }, JSON_WEB_TOKEN_SECRET))
 			.expect(401)
-			.end(done)
 
-		it 'should return 401 if wrong api key is used in a service token', (done) ->
+		it 'should return 401 if wrong api key is used in a service token', ->
 			supertest(@app)
 			.get('/test')
 			.set('Authorization', 'Bearer ' + jwt.createServiceJwt({ service: 'builder', 'apikey': 'notapikey', secret: JSON_WEB_TOKEN_SECRET }))
 			.expect(401)
-			.end(done)
 
-		it 'should return 200 passing correct jwt', (done) ->
+		it 'should return 200 passing correct jwt', ->
 			supertest(@app)
 			.get('/test')
 			.set('Authorization', 'Bearer ' + jwt.createServiceJwt({ service: 'builder', 'apikey': API_KEYS.builder, secret: JSON_WEB_TOKEN_SECRET }))
 			.expect(200)
 			.expect (res) ->
 				expect(res.body).to.have.property('service').that.eql('builder')
-			.end(done)
 
 	describe 'user token', ->
 
-		it 'should return 200 passing a correct user jwt', (done) ->
+		it 'should return 200 passing a correct user jwt', ->
 			supertest(@app)
 			.get('/test')
 			.set('Authorization', 'Bearer ' + jwt.createJwt({ id: USER_ID, jwt_secret: USER_JWT_SECRET }, JSON_WEB_TOKEN_SECRET))
@@ -134,10 +124,9 @@ describe 'strategy', ->
 			.expect (res) ->
 				expect(res.body).to.have.property('id').that.eql(USER_ID)
 				expect(res.body).to.have.property('jwt_secret').that.eql(USER_JWT_SECRET)
-			.end(done)
-		it 'should return 401 passing an invalid user jwt', (done) ->
+
+		it 'should return 401 passing an invalid user jwt', ->
 			supertest(@app)
 			.get('/test')
 			.set('Authorization', 'Bearer ' + jwt.createJwt({ id: USER_ID, jwt_secret: "not-#{USER_JWT_SECRET}" }, JSON_WEB_TOKEN_SECRET))
 			.expect(401)
-			.end(done)

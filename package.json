@@ -5,32 +5,32 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git@bitbucket.org:rulemotion/resin-jwt"
+    "url": "git@github.com:resin-io-modules/resin-jwt"
   },
   "author": "Aleksis Brezas <abresas@resin.io>",
   "scripts": {
     "lint": "resin-lint ./index.coffee ./test",
     "pretest": "npm run lint && coffee -c index.coffee",
-    "test": "mocha --compilers coffee:coffee-script/register test/index.coffee",
+    "test": "mocha --require coffeescript/register test/index.coffee",
     "prepublish": "npm test"
   },
   "dependencies": {
     "bluebird": "^3.0.0",
-    "jsonwebtoken": "^5.0.4",
-    "passport-jwt": "^2.1.0",
+    "jsonwebtoken": "^8.3.0",
+    "passport-jwt": "^4.0.0",
     "request": "^2.65.0"
   },
   "devDependencies": {
     "atob": "^2.0.0",
-    "chai": "^3.0.0",
-    "chai-as-promised": "^5.1.0",
-    "coffee-script": "~1.10.0",
+    "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
+    "coffeescript": "^2.3.2",
     "express": "^4.13.2",
-    "mocha": "^2.2.5",
-    "mockery": "^1.4.0",
-    "passport": "^0.3.2",
-    "requestmock": "0.0.9",
-    "resin-lint": "^1.2.2",
-    "supertest": "^1.0.1"
+    "mocha": "^5.2.0",
+    "mockery": "^2.1.0",
+    "passport": "^0.4.0",
+    "requestmock": "^1.4.0",
+    "resin-lint": "^2.0.1",
+    "supertest": "^3.3.0"
   }
 }
