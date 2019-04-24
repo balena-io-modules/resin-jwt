@@ -1,6 +1,6 @@
 {
   "name": "@balena.io/resin-jwt",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Jwt signing and handling for resin services.",
   "main": "index.js",
   "repository": {
