@@ -1,5 +1,5 @@
 {
-  "name": "@resin/resin-jwt",
+  "name": "@balena.io/resin-jwt",
   "version": "2.0.0",
   "description": "Jwt signing and handling for resin services.",
   "main": "index.js",
