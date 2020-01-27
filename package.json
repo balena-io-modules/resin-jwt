@@ -13,7 +13,8 @@
     "lintfix": "resin-lint --typescript --fix index.ts",
     "pretest": "npm run lint && npx tsc",
     "test": "mocha --require coffeescript/register test/index.coffee",
-    "prepublish": "npm test"
+    "prepublish": "require-npm4-to-publish",
+    "prepublishOnly": "npm test"
   },
   "dependencies": {
     "@types/bluebird": "^3.5.29",
@@ -32,6 +33,7 @@
     "mocha": "^5.2.0",
     "mockery": "^2.1.0",
     "requestmock": "^1.4.0",
+    "require-npm4-to-publish": "^1.0.0",
     "resin-lint": "^3.2.0",
     "typescript": "^3.7.5"
   },
