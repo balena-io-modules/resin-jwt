@@ -9,12 +9,17 @@
   },
   "author": "Aleksis Brezas <abresas@resin.io>",
   "scripts": {
-    "lint": "resin-lint ./index.coffee ./test",
-    "pretest": "npm run lint && coffee -c index.coffee",
+    "lint": "resin-lint --typescript index.ts && resin-lint ./test",
+    "lintfix": "resin-lint --typescript --fix index.ts",
+    "pretest": "npm run lint && npx tsc",
     "test": "mocha --require coffeescript/register test/index.coffee",
     "prepublish": "npm test"
   },
   "dependencies": {
+    "@types/bluebird": "^3.5.29",
+    "@types/jsonwebtoken": "^8.3.7",
+    "@types/node": "^10.17.13",
+    "@types/request": "^2.48.4",
     "bluebird": "^3.0.0",
     "jsonwebtoken": "^8.3.0",
     "request": "^2.65.0"
@@ -27,7 +32,8 @@
     "mocha": "^5.2.0",
     "mockery": "^2.1.0",
     "requestmock": "^1.4.0",
-    "resin-lint": "^2.0.1"
+    "resin-lint": "^3.2.0",
+    "typescript": "^3.7.5"
   },
   "license": "Apache-2.0"
 }
