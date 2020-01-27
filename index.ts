@@ -13,11 +13,10 @@
 	See the License for the specific language governing permissions and
 	limitations under the License.
 */
-
-import * as Promise from 'bluebird';
+import { promisify } from 'util';
 import * as jsonwebtoken from 'jsonwebtoken';
 import * as request from 'request';
-const postAsync = Promise.promisify(request.post);
+const postAsync = promisify(request.post);
 
 const DEFAULT_EXPIRY_MINUTES = 1440;
 
@@ -61,7 +60,7 @@ export interface RequestUserJwtOptions {
 	username?: string;
 }
 
-export const requestUserJwt = Promise.method((
+export const requestUserJwt = async (
 	opts: RequestUserJwtOptions,
 ) => {
 	let qs;
@@ -81,17 +80,16 @@ export const requestUserJwt = Promise.method((
 			Authorization: `Bearer ${opts.token}`,
 		},
 	};
-	return postAsync(requestOpts)
-		.then(response => {
-			if (response.statusCode !== 200 || !response.body) {
-				throw new Error(
-					`Authorization failed. Status code: ${response.statusCode}, body: ${response.body}`,
-				);
-			}
-			return response.body;
-		})
-		.catch(e => {
-			console.error('authorization request failed', e, e.message, e.stack);
-			throw e;
-		});
-});
+	try {
+		const response = await postAsync(requestOpts)
+		if (response.statusCode !== 200 || !response.body) {
+			throw new Error(
+				`Authorization failed. Status code: ${response.statusCode}, body: ${response.body}`,
+			);
+		}
+		return response.body;
+	} catch(e) {
+		console.error('authorization request failed', e, e.message, e.stack);
+		throw e;
+	}
+};

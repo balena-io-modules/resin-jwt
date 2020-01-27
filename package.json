@@ -17,11 +17,9 @@
     "prepublishOnly": "npm test"
   },
   "dependencies": {
-    "@types/bluebird": "^3.5.29",
     "@types/jsonwebtoken": "^8.3.7",
     "@types/node": "^10.17.13",
     "@types/request": "^2.48.4",
-    "bluebird": "^3.7.2",
     "jsonwebtoken": "^8.5.1",
     "request": "^2.65.0"
   },
