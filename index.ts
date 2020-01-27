@@ -13,18 +13,25 @@
 	See the License for the specific language governing permissions and
 	limitations under the License.
 */
-import { promisify } from 'util';
-import * as jsonwebtoken from 'jsonwebtoken';
-import * as request from 'request';
-const postAsync = promisify(request.post);
+
+import * as _jsonwebtoken from 'jsonwebtoken';
+import * as _request from 'request';
 
 const DEFAULT_EXPIRY_MINUTES = 1440;
 
-export const createJwt = (
-	payload: { [key: string]: any },
-	secret: string,
-	expiry = DEFAULT_EXPIRY_MINUTES,
-) => jsonwebtoken.sign(payload, secret, { expiresIn: expiry * 60 });
+export const createJwt = (() => {
+	let jsonwebtoken: typeof _jsonwebtoken;
+	return (
+		payload: { [key: string]: any },
+		secret: string,
+		expiry = DEFAULT_EXPIRY_MINUTES,
+	) => {
+		if (!jsonwebtoken) {
+			jsonwebtoken = require('jsonwebtoken');
+		}
+		return jsonwebtoken.sign(payload, secret, { expiresIn: expiry * 60 });
+	};
+})();
 
 export interface CreateServiceJwtOptions {
 	service: string;
@@ -60,9 +67,25 @@ export interface RequestUserJwtOptions {
 	username?: string;
 }
 
-export const requestUserJwt = async (
-	opts: RequestUserJwtOptions,
-) => {
+const postAsync = (() => {
+	let post: typeof _request.post;
+	return async (requestOpts: Parameters<typeof _request.post>[0]) => {
+		if (!post) {
+			({ post } = require('request'));
+		}
+		return new Promise<_request.Response>((resolve, reject) => {
+			post(requestOpts, (err, response) => {
+				if (err) {
+					reject(err);
+				} else {
+					resolve(response);
+				}
+			});
+		});
+	};
+})();
+
+export const requestUserJwt = async (opts: RequestUserJwtOptions) => {
 	let qs;
 	if (opts.userId != null) {
 		qs = { userId: opts.userId };
@@ -80,7 +103,7 @@ export const requestUserJwt = async (
 			Authorization: `Bearer ${opts.token}`,
 		},
 	};
-	const response = await postAsync(requestOpts)
+	const response = await postAsync(requestOpts);
 	if (response.statusCode !== 200 || !response.body) {
 		throw new Error(
 			`Authorization failed. Status code: ${response.statusCode}, body: ${response.body}`,
