@@ -16,42 +16,9 @@
 
 Promise = require 'bluebird'
 jsonwebtoken = require 'jsonwebtoken'
-{ Strategy: JwtStrategy, ExtractJwt } = require 'passport-jwt'
 request = Promise.promisifyAll(require('request'), multiArgs: true)
 
 DEFAULT_EXPIRY_MINUTES = 1440
-
-exports.strategy = (opts = {}) ->
-	if not opts.secret
-		throw new Error('Json web token secret not defined in jwt strategy')
-	new JwtStrategy
-		secretOrKey: opts.secret
-		passReqToCallback: true
-		jwtFromRequest: ExtractJwt.versionOneCompatibility(
-			tokenBodyField: '_token'
-			authScheme: 'Bearer'
-		)
-		(req, jwtData, done) ->
-			Promise.try ->
-				if !jwtData?
-					return false
-				if jwtData.service
-					if jwtData.apikey and opts.apiKeys[jwtData.service] == jwtData.apikey
-						return jwtData
-					else
-						return false
-				else
-					requestOpts =
-						url: "https://#{opts.apiHost}:#{opts.apiPort}/whoami"
-						headers:
-							Authorization: req.headers.authorization
-					request.getAsync(requestOpts)
-					.spread (response) ->
-						if response.statusCode isnt 200
-							return false
-						else
-							return jwtData
-			.nodeify(done)
 
 exports.createJwt = createJwt = (payload, secret, expiry = DEFAULT_EXPIRY_MINUTES) ->
 	jsonwebtoken.sign(payload, secret, expiresIn: expiry * 60)

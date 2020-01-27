@@ -17,7 +17,6 @@
   "dependencies": {
     "bluebird": "^3.0.0",
     "jsonwebtoken": "^8.3.0",
-    "passport-jwt": "^4.0.0",
     "request": "^2.65.0"
   },
   "devDependencies": {
@@ -25,13 +24,10 @@
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "coffeescript": "^2.3.2",
-    "express": "^4.13.2",
     "mocha": "^5.2.0",
     "mockery": "^2.1.0",
-    "passport": "^0.4.0",
     "requestmock": "^1.4.0",
-    "resin-lint": "^2.0.1",
-    "supertest": "^3.3.0"
+    "resin-lint": "^2.0.1"
   },
   "license": "Apache-2.0"
 }
