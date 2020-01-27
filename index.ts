@@ -80,16 +80,11 @@ export const requestUserJwt = async (
 			Authorization: `Bearer ${opts.token}`,
 		},
 	};
-	try {
-		const response = await postAsync(requestOpts)
-		if (response.statusCode !== 200 || !response.body) {
-			throw new Error(
-				`Authorization failed. Status code: ${response.statusCode}, body: ${response.body}`,
-			);
-		}
-		return response.body;
-	} catch(e) {
-		console.error('authorization request failed', e, e.message, e.stack);
-		throw e;
+	const response = await postAsync(requestOpts)
+	if (response.statusCode !== 200 || !response.body) {
+		throw new Error(
+			`Authorization failed. Status code: ${response.statusCode}, body: ${response.body}`,
+		);
 	}
+	return response.body;
 };
