@@ -9,15 +9,18 @@
   },
   "author": "Aleksis Brezas <abresas@resin.io>",
   "scripts": {
-    "lint": "resin-lint ./index.coffee ./test",
-    "pretest": "npm run lint && coffee -c index.coffee",
+    "lint": "resin-lint --typescript index.ts && resin-lint ./test",
+    "lintfix": "resin-lint --typescript --fix index.ts",
+    "pretest": "npm run lint && npx tsc",
     "test": "mocha --require coffeescript/register test/index.coffee",
-    "prepublish": "npm test"
+    "prepublish": "require-npm4-to-publish",
+    "prepublishOnly": "npm test"
   },
   "dependencies": {
-    "bluebird": "^3.0.0",
-    "jsonwebtoken": "^8.3.0",
-    "passport-jwt": "^4.0.0",
+    "@types/jsonwebtoken": "^8.3.7",
+    "@types/node": "^10.17.13",
+    "@types/request": "^2.48.4",
+    "jsonwebtoken": "^8.5.1",
     "request": "^2.65.0"
   },
   "devDependencies": {
@@ -25,13 +28,12 @@
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "coffeescript": "^2.3.2",
-    "express": "^4.13.2",
-    "mocha": "^5.2.0",
+    "mocha": "^7.0.1",
     "mockery": "^2.1.0",
-    "passport": "^0.4.0",
     "requestmock": "^1.4.0",
-    "resin-lint": "^2.0.1",
-    "supertest": "^3.3.0"
+    "require-npm4-to-publish": "^1.0.0",
+    "resin-lint": "^3.2.0",
+    "typescript": "^3.7.5"
   },
   "license": "Apache-2.0"
 }
