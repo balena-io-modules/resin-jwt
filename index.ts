@@ -59,13 +59,19 @@ export const createServiceJwt = ({
 	return createJwt(payload, secret, expiry);
 };
 
-export interface RequestUserJwtOptions {
-	apiHost: string;
-	apiPort: string;
+interface BaseRequestUserJwtOptions {
 	token: string;
 	userId?: string;
 	username?: string;
 }
+export type RequestUserJwtOptions =
+	| ({
+			apiUrl: string;
+	  } & BaseRequestUserJwtOptions)
+	| ({
+			apiHost: string;
+			apiPort: string;
+	  } & BaseRequestUserJwtOptions);
 
 const postAsync = (() => {
 	let post: typeof _request.post;
@@ -96,8 +102,11 @@ export const requestUserJwt = async (opts: RequestUserJwtOptions) => {
 			'Neither userId nor username specified when requesting authorization',
 		);
 	}
+	const apiUrl =
+		'apiUrl' in opts ? opts.apiUrl : `https://${opts.apiHost}:${opts.apiPort}`;
+
 	const requestOpts = {
-		url: `https://${opts.apiHost}:${opts.apiPort}/authorize`,
+		url: `${apiUrl}/authorize`,
 		qs,
 		headers: {
 			Authorization: `Bearer ${opts.token}`,
